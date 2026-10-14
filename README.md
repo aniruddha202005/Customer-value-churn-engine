@@ -32,34 +32,41 @@ Known problems handled in this project:
 - **Skewed revenue:** the value model is trained on log(1 + revenue), with Duan's smearing correction so that totals are not underestimated. A hurdle model (P(buy) × spend-if-buy) is also compared.
 
 ## Results
-Fill these in from `reports/metrics.json` after running on the real data.
+Validated on 4,324 customers at the 2011-09-01 cutoff, a later period the models never saw during training (16,122 customer-snapshots from 4 earlier cutoffs).
+
+### Churn: will the customer place no order in the next 90 days?
+Validation churn rate: 50.5%.
 
 | Model | ROC-AUC | PR-AUC | Precision in top 20% |
 |---|---|---|---|
-| Recency rule (baseline) | | | |
-| Logistic regression | | | |
-| Gradient boosting | | | |
+| Recency rule (baseline) | 0.708 | 0.679 | 71.6% |
+| Logistic regression | 0.766 | 0.724 | 75.8% |
+| **Gradient boosting (selected)** | **0.767** | **0.727** | **75.7%** |
 
+Both models beat the recency baseline by about 6 points of ROC-AUC. Logistic regression and gradient boosting are effectively tied.
+
+### Value: how much will the customer spend in the next 90 days?
 | Model | MAE (£) | Spearman | Top-20% revenue capture | Predicted ÷ actual total |
 |---|---|---|---|---|
-| Last 90 days (baseline) | | | | |
-| Ridge (log target) | | | | |
-| Gradient boosting (log target) | | | | |
-| Hurdle | | | | |
+| Last 90 days (baseline) | 454 | 0.45 | 66.6% | 0.71 |
+| Ridge (log target) | 1,464 | 0.54 | 67.6% | 2.86 |
+| Gradient boosting (log target) | 1,669 | 0.55 | 69.4% | 3.24 |
+| **Hurdle: P(buy) × spend-if-buy (selected)** | **429** | **0.54** | **70.5%** | **0.58** |
 
-## How to run
-```bash
-python -m venv .venv
-.venv\Scripts\activate          # Windows  (macOS/Linux: source .venv/bin/activate)
-pip install -r requirements.txt
-```
-1. Download `online_retail_II.xlsx` from https://archive.ics.uci.edu/dataset/502/online+retail+ii and place it in `data/`.
-2. In MySQL, run `CREATE DATABASE retail_clv;`
-3. Copy `.env.example` to `.env` and enter your MySQL password.
-4. Run `python run_pipeline.py`. The first run spends a few minutes reading the Excel file. Use `--skip-load` afterwards.
-5. Run `streamlit run app.py`.
+The single-stage log models over-predicted total revenue about three times over: half the customers spend £0, which breaks the smearing correction's assumption of similar errors for every customer. The hurdle model separates "will they buy?" from "how much?" and has the lowest error.
 
-## Limitations
-- The data covers only two years, so the 90-day windows and the four training cutoffs overlap in history.
-- The customers are mostly wholesalers, so purchase patterns are lumpier than in pure retail.
-- There is no marketing-contact data, so the project predicts who is at risk, not who would respond to an offer. Measuring that would need an uplift model and an A/B test.
+### Retention segments (4,261 active customers)
+| | High risk | Medium risk | Low risk |
+|---|---|---|---|
+| High value | 23 | 50 | 780 |
+| Mid value | 257 | 423 | 598 |
+| Low value | 1,801 | 285 | 44 |
+
+73 high-value customers are at high or medium risk. They form the priority retention list.
+
+### What I changed along the way
+1. **Segmentation:** the first version ranked value by predicted spend, which already discounts churn, so no high-value customer could ever be at risk. Value tiers now use the last 12 months' spend.
+2. **Model selection:** choosing the value model by rank correlation alone picked a model that over-predicted revenue 3×. Selection now uses MAE in pounds.
+
+### Open issue
+All value models under-predict the validation period (the hurdle model predicts 58% of actual revenue). The validation window, September to November, is the pre-Christmas peak, and churn was also lower then (50%) than in training (60%). The next experiment is a seasonality feature.
