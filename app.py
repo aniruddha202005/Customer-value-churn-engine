@@ -18,11 +18,17 @@ RISK_ORDER = ["High risk", "Medium risk", "Low risk"]
 
 @st.cache_data
 def load_scores():
-    return pd.read_sql("SELECT * FROM customer_scores", get_engine())
+    try:
+        return pd.read_sql("SELECT * FROM customer_scores", get_engine())
+    except Exception:
+        return pd.read_csv(REPORT_DIR / "customer_scores.csv")
 
 
 @st.cache_data
 def load_monthly():
+    saved = REPORT_DIR / "monthly_trend.csv"
+    if saved.exists():
+        return pd.read_csv(saved, parse_dates=["month"])
     tx = pd.read_sql("SELECT invoice_date, revenue, invoice, customer_id, is_return FROM clean_transactions",
                      get_engine(), parse_dates=["invoice_date"])
     tx["month"] = tx["invoice_date"].dt.to_period("M").dt.to_timestamp()

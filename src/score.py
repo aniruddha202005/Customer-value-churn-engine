@@ -41,6 +41,15 @@ def main():
     scored["customer_id"] = scored["customer_id"].astype(int)
     scored.to_sql("customer_scores", get_engine(), if_exists="replace", index=False)
     scored.to_csv(REPORT_DIR / "customer_scores.csv", index=False)
+    
+    tx["month"] = tx["invoice_date"].dt.to_period("M").dt.to_timestamp()
+    sales = tx[~tx["is_return"]]
+    monthly = pd.DataFrame({
+        "net_revenue": tx.groupby("month")["revenue"].sum(),
+        "orders": sales.groupby("month")["invoice"].nunique(),
+        "active_customers": sales.groupby("month")["customer_id"].nunique(),
+    }).reset_index()
+    monthly.to_csv(REPORT_DIR / "monthly_trend.csv", index=False)
     print(f"Scored {len(scored):,} customers as of {cutoff.date()}")
     print(scored.groupby(["value_tier", "risk_tier"]).size().unstack(fill_value=0))
 
