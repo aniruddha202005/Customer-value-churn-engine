@@ -1,0 +1,66 @@
+{
+  "churn": {
+    "baseline_recency_rule": {
+      "roc_auc": 0.708,
+      "pr_auc": 0.6794,
+      "precision_top20": 0.7164
+    },
+    "logistic_regression": {
+      "roc_auc": 0.7661,
+      "pr_auc": 0.7235,
+      "precision_top20": 0.7581
+    },
+    "gradient_boosting": {
+      "roc_auc": 0.7665,
+      "pr_auc": 0.7274,
+      "precision_top20": 0.7569
+    }
+  },
+  "value": {
+    "baseline_last_90_days": {
+      "mae": 453.78,
+      "rmse": 2079.45,
+      "spearman": 0.4515,
+      "top20_revenue_capture": 0.6656,
+      "total_pred_vs_actual": 0.711
+    },
+    "ridge_log": {
+      "mae": 1464.49,
+      "rmse": 10759.3,
+      "spearman": 0.5382,
+      "top20_revenue_capture": 0.6762,
+      "total_pred_vs_actual": 2.86
+    },
+    "gradient_boosting_log": {
+      "mae": 1669.26,
+      "rmse": 10272.54,
+      "spearman": 0.5478,
+      "top20_revenue_capture": 0.6942,
+      "total_pred_vs_actual": 3.239
+    },
+    "hurdle_churn_x_spend": {
+      "mae": 428.94,
+      "rmse": 2469.95,
+      "spearman": 0.5368,
+      "top20_revenue_capture": 0.7053,
+      "total_pred_vs_actual": 0.582
+    }
+  },
+  "data": {
+    "train_rows": 16122,
+    "valid_rows": 4324,
+    "train_churn_rate": 0.5977,
+    "valid_churn_rate": 0.5046,
+    "train_cutoffs": [
+      "2010-09-01",
+      "2010-12-01",
+      "2011-03-01",
+      "2011-06-01"
+    ],
+    "valid_cutoff": "2011-09-01"
+  },
+  "selected": {
+    "churn": "gradient_boosting",
+    "value": "hurdle_churn_x_spend"
+  }
+}

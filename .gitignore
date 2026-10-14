@@ -1,0 +1,12 @@
+.env
+data/*.xlsx
+data/*.zip
+models/*.joblib
+__pycache__/
+.venv/
+
+retail.db
+.venv*/
+
+retail.db
+.venv*/

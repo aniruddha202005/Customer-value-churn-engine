@@ -1,0 +1,8 @@
+step,rows_after,reason
+raw,1067371,all rows from both sheets
+drop_exact_duplicates,1033036,"identical rows, incl. any sheet overlap"
+drop_bad_debt_invoices,1033030,invoices starting with A are accounting adjustments
+drop_non_product_codes,1027056,"postage, fees, manual and test codes"
+drop_zero_price,1021128,free items and price adjustments
+drop_sign_mismatch,1021128,"sales must be positive, cancellations negative"
+note_missing_customer,226965,rows without customer_id kept for revenue totals but excluded from modelling (13.1% of sales revenue)
